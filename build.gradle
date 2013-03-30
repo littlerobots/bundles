@@ -1,0 +1,24 @@
+apply plugin: "java"
+apply plugin: 'eclipse'
+apply plugin: "fatjar"
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+    }
+}
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "com.squareup:javawriter:1.0.4"
+}
