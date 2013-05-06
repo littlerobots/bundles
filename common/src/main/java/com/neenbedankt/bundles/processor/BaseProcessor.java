@@ -83,6 +83,10 @@ public abstract class BaseProcessor extends AbstractProcessor {
             return "Serializable";
         }
 
+        if (types.isAssignable(type, elements.getTypeElement("android.os.Parcelable").asType())) {
+            return "Parcelable";
+        }
+
         return null;
     }
 
@@ -102,7 +106,7 @@ public abstract class BaseProcessor extends AbstractProcessor {
         String op = getOperation(arg);
 
         if (op == null) {
-            error(arg.getElement(), "Can't now how to put %s in a Bundle", arg.getElement().asType().toString());
+            error(arg.getElement(), "Don't know how to put %s in a Bundle", arg.getElement().asType().toString());
             return;
         }
         if ("Serializable".equals(op)) {
