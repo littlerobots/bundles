@@ -1,4 +1,6 @@
 apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/1.1/apply.groovy'
+apply plugin: 'signing'
+apply plugin: 'maven'
 
 buildscript {
     repositories {
@@ -10,34 +12,140 @@ buildscript {
     }
 }
 
+allprojects {
+    apply plugin: "java"
+    apply plugin: "fatjar"
+    apply plugin: "maven"
+
+    group = "com.neenbedankt.bundles"
+
+    build.dependsOn fatJar
+
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+
+    repositories {
+        mavenCentral()
+    }
+
+}
+
+signing {
+    sign configurations.archives
+}
+
 subprojects {
-  apply plugin: "java"
-  apply plugin: 'eclipse'
-  apply plugin: "fatjar"
 
-  dependencies {
-      compile "com.squareup:javawriter:1.0.4"
-  }
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from 'build/docs/javadoc'
+    }
 
-  sourceCompatibility = 1.6
-  targetCompatibility = 1.6
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
+    }
 
-  repositories {
-      mavenCentral()
-  }
+    artifacts {
+        archives jar
+        archives javadocJar
+        archives sourcesJar
+    }
 
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+
+                beforeDeployment { deployment -> signing.signPom(deployment) }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+
+
+                pom.project {
+
+                    parent {
+                        groupId 'org.sonatype.oss'
+                        artifactId 'oss-parent'
+                        version '7'
+                    }
+
+                    name 'Bundles'
+                    packaging 'jar'
+                    description 'Bundles is a set of annotation processors for Android source code'
+                    url 'https://bitbucket.org/hvisser/bundles'
+
+                    scm {
+                        url 'https://bitbucket.org/hvisser/bundles'
+                        connection 'scm:hg:https://bitbucket.org/hvisser/bundles'
+                        developerConnection 'scm:hg:https://bitbucket.org/hvisser/bundles'
+                    }
+
+                    licenses {
+                        license {
+                            name 'Unlicense'
+                            url 'http://unlicense.org/UNLICENSE'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'hvisser'
+                            name 'Hugo Visser'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    dependencies {
+        compile "com.squareup:javawriter:1.0.4"
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
 }
 
 project(':frozen') {
+    uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Frozen annotation processor'
+
     dependencies {
         compile project(':common')
     }
-    build.dependsOn fatJar
 }
 
 project(':argument') {
+
+    uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Argument annotation processor'
+
     dependencies {
         compile project(':common')
     }
-    build.dependsOn fatJar
 }
+
+dependencies {
+    compile project(':argument')
+    compile project(':frozen')
+}
+
