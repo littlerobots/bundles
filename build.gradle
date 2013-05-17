@@ -67,6 +67,7 @@ subprojects {
                     authentication(userName: sonatypeUsername, password: sonatypePassword)
                 }
 
+                uniqueVersion = false
 
                 pom.project {
 
@@ -111,20 +112,8 @@ subprojects {
     }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-artifacts {
-    archives jar
-    archives javadocJar
-    archives sourcesJar
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.4'
 }
 
 project(':frozen') {
