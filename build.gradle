@@ -28,8 +28,10 @@ allprojects {
         mavenCentral()
     }
 
-    signing {
-        sign configurations.archives
+    if (project.hasProperty("signing.keyId")) {
+        signing {
+            sign configurations.archives
+        }
     }
 }
 
@@ -51,21 +53,21 @@ subprojects {
         archives sourcesJar
     }
 
-
     uploadArchives {
         repositories {
             mavenDeployer {
 
                 beforeDeployment { deployment -> signing.signPom(deployment) }
 
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
+                if (project.hasProperty('sonatypeUsername')) {
+                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                        authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
 
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+                        authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
                 }
-
                 uniqueVersion = false
 
                 pom.project {
