@@ -1,5 +1,4 @@
 apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/1.1/apply.groovy'
-apply plugin: 'signing'
 apply plugin: 'maven'
 
 buildscript {
@@ -16,6 +15,7 @@ allprojects {
     apply plugin: "java"
     apply plugin: "fatjar"
     apply plugin: "maven"
+    apply plugin: 'signing'
 
     group = "com.neenbedankt.bundles"
 
@@ -28,10 +28,9 @@ allprojects {
         mavenCentral()
     }
 
-}
-
-signing {
-    sign configurations.archives
+    signing {
+        sign configurations.archives
+    }
 }
 
 subprojects {
@@ -118,7 +117,6 @@ task wrapper(type: Wrapper) {
 
 project(':frozen') {
     uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Frozen annotation processor'
-
     dependencies {
         compile project(':common')
     }
