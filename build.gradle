@@ -109,7 +109,7 @@ subprojects {
     }
 
     dependencies {
-        compile "com.squareup:javawriter:1.0.4"
+        compile "com.squareup:javawriter:2.1.2"
     }
 }
 

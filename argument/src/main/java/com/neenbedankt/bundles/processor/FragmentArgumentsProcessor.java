@@ -3,6 +3,7 @@ package com.neenbedankt.bundles.processor;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -25,7 +26,7 @@ import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
 import com.neenbedankt.bundles.annotation.Argument;
-import com.squareup.java.JavaWriter;
+import com.squareup.javawriter.JavaWriter;
 
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Argument")
 public class FragmentArgumentsProcessor extends BaseProcessor {
@@ -110,9 +111,8 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 JavaWriter jw = new JavaWriter(writer);
                 writePackage(jw, entry.getKey());
                 jw.emitImports("android.os.Bundle");
-                jw.beginType(builder, "class", java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.FINAL);
-                jw.emitField("Bundle", "mArguments", java.lang.reflect.Modifier.PRIVATE
-                        | java.lang.reflect.Modifier.FINAL, "new Bundle()");
+                jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
+                jw.emitField("Bundle", "mArguments", EnumSet.of(Modifier.PRIVATE, Modifier.FINAL), "new Bundle()");
                 jw.emitEmptyLine();
 
                 Set<AnnotatedField> required = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, true,
@@ -124,7 +124,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                     args[index++] = arg.getType();
                     args[index++] = arg.getVariableName();
                 }
-                jw.beginMethod(null, builder, java.lang.reflect.Modifier.PUBLIC, args);
+                jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
 
                 for (AnnotatedField arg : required) {
                     writePutArguments(jw, arg.getVariableName(), "mArguments", arg);
@@ -163,7 +163,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
     private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element, JavaWriter jw, String[] args)
             throws IOException {
         jw.beginMethod(element.getQualifiedName().toString(), "new" + element.getSimpleName(),
-                java.lang.reflect.Modifier.STATIC | java.lang.reflect.Modifier.PUBLIC, args);
+                EnumSet.of(Modifier.STATIC, Modifier.PUBLIC), args);
         StringBuilder argNames = new StringBuilder();
         for (int i = 1; i < args.length; i += 2) {
             argNames.append(args[i]);
@@ -176,7 +176,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
     }
 
     private void writeBuildMethod(JavaWriter jw, TypeElement element) throws IOException {
-        jw.beginMethod(element.getSimpleName().toString(), "build", java.lang.reflect.Modifier.PUBLIC);
+        jw.beginMethod(element.getSimpleName().toString(), "build", EnumSet.of(Modifier.PUBLIC));
         jw.emitStatement("%1$s fragment = new %1$s()", element.getSimpleName().toString());
         jw.emitStatement("fragment.setArguments(mArguments)");
         jw.emitStatement("return fragment");
@@ -185,7 +185,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
 
     private void writeInjectMethod(JavaWriter jw, TypeElement element, Set<AnnotatedField> allArguments)
             throws IOException {
-        jw.beginMethod("void", "injectArguments", java.lang.reflect.Modifier.STATIC | java.lang.reflect.Modifier.FINAL,
+        jw.beginMethod("void", "injectArguments", EnumSet.of(Modifier.STATIC, Modifier.FINAL),
                 element.getSimpleName().toString(), "fragment");
 
         jw.emitStatement("Bundle args = fragment.getArguments()");
@@ -219,7 +219,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
 
     private void writeBuilderMethod(String type, JavaWriter writer, AnnotatedField arg) throws IOException {
         writer.emitEmptyLine();
-        writer.beginMethod(type, arg.getVariableName(), java.lang.reflect.Modifier.PUBLIC, arg.getType(),
+        writer.beginMethod(type, arg.getVariableName(),EnumSet.of(Modifier.PUBLIC), arg.getType(),
                 arg.getVariableName());
         writePutArguments(writer, arg.getVariableName(), "mArguments", arg);
         writer.emitStatement("return this");

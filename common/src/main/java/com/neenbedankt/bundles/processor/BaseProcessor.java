@@ -1,5 +1,7 @@
 package com.neenbedankt.bundles.processor;
 
+import com.squareup.javawriter.JavaWriter;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,7 +18,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
-import com.squareup.java.JavaWriter;
 
 public abstract class BaseProcessor extends AbstractProcessor {
 

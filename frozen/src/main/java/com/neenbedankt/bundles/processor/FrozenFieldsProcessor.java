@@ -2,7 +2,7 @@ package com.neenbedankt.bundles.processor;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Modifier;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -12,11 +12,12 @@ import java.util.Set;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
 import com.neenbedankt.bundles.annotation.Frozen;
-import com.squareup.java.JavaWriter;
+import com.squareup.javawriter.JavaWriter;
 
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Frozen")
 public class FrozenFieldsProcessor extends BaseProcessor {
@@ -49,8 +50,8 @@ public class FrozenFieldsProcessor extends BaseProcessor {
 
                 writePackage(jw, entry.getKey());
 
-                jw.beginType(entry.getKey().getQualifiedName() + "State", "class", Modifier.FINAL);
-                jw.beginMethod(null, entry.getKey().getSimpleName().toString()+"State", Modifier.PRIVATE);
+                jw.beginType(entry.getKey().getQualifiedName() + "State", "class", EnumSet.of(Modifier.FINAL));
+                jw.beginMethod(null, entry.getKey().getSimpleName().toString()+"State", EnumSet.of(Modifier.PRIVATE));
                 jw.endMethod();
 
                 writeOnSaveInstanceState(jw, entry.getKey(), entry.getValue());
@@ -67,7 +68,7 @@ public class FrozenFieldsProcessor extends BaseProcessor {
     }
 
     private void writeOnRestoreInstanceState(JavaWriter jw, TypeElement key, Set<AnnotatedField> fields) throws IOException {
-        jw.beginMethod("void", "restoreInstanceState", Modifier.STATIC, key.getQualifiedName().toString(), "target", "android.os.Bundle", "savedInstanceState");
+        jw.beginMethod("void", "restoreInstanceState", EnumSet.of(Modifier.STATIC), key.getQualifiedName().toString(), "target", "android.os.Bundle", "savedInstanceState");
         jw.beginControlFlow("if (savedInstanceState == null)");
         jw.emitStatement("return");
         jw.endControlFlow();
@@ -85,7 +86,7 @@ public class FrozenFieldsProcessor extends BaseProcessor {
     }
 
     private void writeOnSaveInstanceState(JavaWriter jw, TypeElement key, Set<AnnotatedField> fields) throws IOException {
-        jw.beginMethod("void", "saveInstanceState", Modifier.STATIC, key.getQualifiedName().toString(), "source", "android.os.Bundle", "outState");
+        jw.beginMethod("void", "saveInstanceState", EnumSet.of(Modifier.STATIC), key.getQualifiedName().toString(), "source", "android.os.Bundle", "outState");
         for (AnnotatedField field : fields) {
             writePutArguments(jw, String.format("source.%s", field.getName()), "outState", field);
         }
