@@ -1,5 +1,8 @@
 package com.neenbedankt.bundles.processor;
 
+import com.neenbedankt.bundles.annotation.Argument;
+import com.squareup.javawriter.JavaWriter;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -24,9 +27,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-
-import com.neenbedankt.bundles.annotation.Argument;
-import com.squareup.javawriter.JavaWriter;
 
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Argument")
 public class FragmentArgumentsProcessor extends BaseProcessor {
@@ -62,15 +62,15 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         Elements elementUtils = processingEnv.getElementUtils();
         Types typeUtils = processingEnv.getTypeUtils();
         Filer filer = processingEnv.getFiler();
-        TypeMirror fragmentType = elementUtils.getTypeElement("android.app.Fragment").asType();
-        TypeMirror supportFragmentType = elementUtils.getTypeElement("android.support.v4.app.Fragment").asType();
+        TypeElement fragmentType = elementUtils.getTypeElement("android.app.Fragment");
+        TypeElement supportFragmentType = elementUtils.getTypeElement("android.support.v4.app.Fragment");
         Map<TypeElement, Set<Element>> fieldsByType = new HashMap<TypeElement, Set<Element>>(100);
 
         for (Element element : env.getElementsAnnotatedWith(Argument.class)) {
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
-            if (!typeUtils.isSubtype(enclosingElement.asType(), fragmentType)
-                    && !typeUtils.isSubtype(enclosingElement.asType(), supportFragmentType)) {
+            if (!((fragmentType != null && typeUtils.isSubtype(enclosingElement.asType(), fragmentType.asType())) ||
+                    (supportFragmentType != null && typeUtils.isSubtype(enclosingElement.asType(), supportFragmentType.asType())))) {
                 error(element, "@Argument can only be used on fragment fields (%s.%s)",
                         enclosingElement.getQualifiedName(), element);
                 continue;
@@ -148,7 +148,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 writeInjectMethod(jw, entry.getKey(),
                         collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, false, false));
                 writeBuildMethod(jw, entry.getKey());
-
+                writeBuildSubclassMethod(jw, entry.getKey());
                 jw.endType();
                 jw.close();
             } catch (IOException e) {
@@ -178,6 +178,13 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
     private void writeBuildMethod(JavaWriter jw, TypeElement element) throws IOException {
         jw.beginMethod(element.getSimpleName().toString(), "build", EnumSet.of(Modifier.PUBLIC));
         jw.emitStatement("%1$s fragment = new %1$s()", element.getSimpleName().toString());
+        jw.emitStatement("fragment.setArguments(mArguments)");
+        jw.emitStatement("return fragment");
+        jw.endMethod();
+    }
+
+    private void writeBuildSubclassMethod(JavaWriter jw, TypeElement element) throws IOException {
+        jw.beginMethod("<F extends " + element.getSimpleName().toString() + "> F", "build", EnumSet.of(Modifier.PUBLIC), "F", "fragment");
         jw.emitStatement("fragment.setArguments(mArguments)");
         jw.emitStatement("return fragment");
         jw.endMethod();
