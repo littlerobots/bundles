@@ -4,7 +4,7 @@ This is an annotation processor for making Fragment construction type safe, and 
 
 There are two annotations provided, `@Argument` for fragment arguments and `@Frozen` for saving and restoring state in `onSaveInstanceState`.
 
-# @Argument
+# \@Argument
 Construction of Fragments can be painful if you need to pass arguments to construct them. The problem is that you need to construct a `Bundle`,
 put values in it by key and set it on the `Fragment` instance. This is not only cumbersome to do, but also not very type safe.
 
@@ -34,7 +34,7 @@ To construct this fragment you'd do something like this:
 
 Required arguments must be passed into the builder constructor, while non-required arguments have a builder method.
 
-# @Frozen
+# \@Frozen
 The `@Frozen` annotation aids with saving `Activity` or `Fragment` state in `onSaveInstanceState` and restoring it in `onCreate` or other places.
 A class <YourActivityName>State is generated for this purpose. Here's an example:
 
