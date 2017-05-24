@@ -1,0 +1,9 @@
+uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Argument annotation processor'
+
+dependencies {
+    compile project(':common')
+    testCompile project(':android-mocks')
+    testCompile 'junit:junit:4.12'
+    testCompile 'com.google.testing.compile:compile-testing:0.11'
+    testCompile files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
+}

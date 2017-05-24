@@ -1,0 +1,9 @@
+uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Frozen annotation processor'
+
+dependencies {
+    compile project(':common')
+    testCompile 'junit:junit:4.12'
+    testCompile project(':android-mocks')
+    testCompile 'com.google.testing.compile:compile-testing:0.11'
+    testCompile files(org.gradle.internal.jvm.Jvm.current().getToolsJar())
+}

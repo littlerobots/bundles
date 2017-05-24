@@ -1,28 +1,25 @@
-apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/1.1/apply.groovy'
 apply plugin: 'maven'
 
 buildscript {
     repositories {
+        jcenter()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+        classpath 'com.android.tools.build:gradle:2.2.2'
     }
 }
 
 allprojects {
     apply plugin: "java"
-    apply plugin: "fatjar"
     apply plugin: "maven"
     apply plugin: 'signing'
 
     group = "com.neenbedankt.bundles"
 
-    build.dependsOn fatJar
-
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
 
     repositories {
         mavenCentral()
@@ -107,34 +104,4 @@ subprojects {
             }
         }
     }
-
-    dependencies {
-        compile "com.squareup:javawriter:2.1.2"
-    }
 }
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.4'
-}
-
-project(':frozen') {
-    uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Frozen annotation processor'
-    dependencies {
-        compile project(':common')
-    }
-}
-
-project(':argument') {
-
-    uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Argument annotation processor'
-
-    dependencies {
-        compile project(':common')
-    }
-}
-
-dependencies {
-    compile project(':argument')
-    compile project(':frozen')
-}
-

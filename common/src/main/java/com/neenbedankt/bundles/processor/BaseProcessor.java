@@ -2,12 +2,6 @@ package com.neenbedankt.bundles.processor;
 
 import com.squareup.javawriter.JavaWriter;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -17,11 +11,16 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public abstract class BaseProcessor extends AbstractProcessor {
 
-    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
+    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(20);
     static {
         ARGUMENT_TYPES.put("java.lang.String", "String");
         ARGUMENT_TYPES.put("int", "Int");

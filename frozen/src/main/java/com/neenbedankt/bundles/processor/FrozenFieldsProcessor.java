@@ -1,5 +1,14 @@
 package com.neenbedankt.bundles.processor;
 
+import com.neenbedankt.bundles.annotation.Frozen;
+import com.squareup.javawriter.JavaWriter;
+
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
@@ -8,16 +17,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.tools.JavaFileObject;
-
-import com.neenbedankt.bundles.annotation.Frozen;
-import com.squareup.javawriter.JavaWriter;
 
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Frozen")
 public class FrozenFieldsProcessor extends BaseProcessor {
@@ -36,7 +35,7 @@ public class FrozenFieldsProcessor extends BaseProcessor {
             }
             Set<AnnotatedField> fields = fieldsByType.get(element.getEnclosingElement());
             if (fields == null) {
-                fields = new LinkedHashSet<AnnotatedField>(10);
+                fields = new LinkedHashSet<>(10);
                 fieldsByType.put((TypeElement)element.getEnclosingElement(), fields);
             }
             fields.add(new FrozenAnnotatedField(element));

@@ -3,6 +3,17 @@ package com.neenbedankt.bundles.processor;
 import com.neenbedankt.bundles.annotation.Argument;
 import com.squareup.javawriter.JavaWriter;
 
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -15,18 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
 
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Argument")
 public class FragmentArgumentsProcessor extends BaseProcessor {
@@ -226,7 +225,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
 
     private void writeBuilderMethod(String type, JavaWriter writer, AnnotatedField arg) throws IOException {
         writer.emitEmptyLine();
-        writer.beginMethod(type, arg.getVariableName(),EnumSet.of(Modifier.PUBLIC), arg.getType(),
+        writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), arg.getType(),
                 arg.getVariableName());
         writePutArguments(writer, arg.getVariableName(), "mArguments", arg);
         writer.emitStatement("return this");

@@ -1,2 +1,2 @@
-include 'common', 'frozen', 'argument'
+include ':common', ':frozen', ':argument', ':android-mocks'
 rootProject.name = "bundles"
