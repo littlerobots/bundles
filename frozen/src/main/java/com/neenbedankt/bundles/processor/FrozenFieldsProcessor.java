@@ -87,7 +87,7 @@ public class FrozenFieldsProcessor extends BaseProcessor {
     private void writeOnSaveInstanceState(JavaWriter jw, TypeElement key, Set<AnnotatedField> fields) throws IOException {
         jw.beginMethod("void", "saveInstanceState", EnumSet.of(Modifier.STATIC), key.getQualifiedName().toString(), "source", "android.os.Bundle", "outState");
         for (AnnotatedField field : fields) {
-            writePutArguments(jw, String.format("source.%s", field.getName()), "outState", field);
+            writePutArguments(jw, String.format("source.%s", field.getName()), "outState", field, false);
         }
         jw.endMethod();
     }

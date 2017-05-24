@@ -139,4 +139,136 @@ public class FragmentArgumentsProcessorTest {
                         "  }\n" +
                         "}"));
     }
+
+    @Test
+    public void testCopyNullableAnnotationToBuilder() {
+        Compilation compilation = javac().
+                withProcessors(new FragmentArgumentsProcessor()).
+                compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
+                        "\n" +
+                        "import android.app.Fragment;\n" +
+                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "\n" +
+                        "public class TestFragment extends Fragment {\n" +
+                        "    @Argument\n" +
+                        "    @Nullable\n" +
+                        "    String mTestStringArgument;\n" +
+                        "    @Argument(required=false)\n" +
+                        "    @Nullable\n" +
+                        "    String mTestStringArgument2;\n" +
+                        "}\n"));
+        assertThat(compilation).succeeded();
+        assertThat(compilation).generatedSourceFile("nl.littlerobots.test.TestFragmentBuilder").
+                hasSourceEquivalentTo(JavaFileObjects.forSourceString("nl.littlerobots.test.TestFragmentBuilder", "package nl.littlerobots.test;\n" +
+                        "\n" +
+                        "import android.os.Bundle;\n" +
+                        "public final class TestFragmentBuilder {\n" +
+                        "  private final Bundle mArguments = new Bundle();\n" +
+                        "\n" +
+                        "  public TestFragmentBuilder(@Nullable String testStringArgument) {\n" +
+                        "    mArguments.putString(\"testStringArgument\", testStringArgument);\n" +
+                        "  }\n" +
+                        "  public static TestFragment newTestFragment(@Nullable String testStringArgument) {\n" +
+                        "    return new TestFragmentBuilder(testStringArgument).build();\n" +
+                        "  }\n" +
+                        "\n" +
+                        "  public TestFragmentBuilder testStringArgument2(@Nullable String testStringArgument2) {\n" +
+                        "    mArguments.putString(\"testStringArgument2\", testStringArgument2);\n" +
+                        "    return this;\n" +
+                        "  }\n" +
+                        "  static final void injectArguments(TestFragment fragment) {\n" +
+                        "    Bundle args = fragment.getArguments();\n" +
+                        "    if (args == null) {\n" +
+                        "      throw new IllegalStateException(\"No arguments set\");\n" +
+                        "    }\n" +
+                        "    if (!args.containsKey(\"testStringArgument\")) {\n" +
+                        "      throw new IllegalStateException(\"required argument testStringArgument is not set\");\n" +
+                        "    }\n" +
+                        "    fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
+                        "    if (args.containsKey(\"testStringArgument2\")) {\n" +
+                        "      fragment.mTestStringArgument2 = args.getString(\"testStringArgument2\");\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "  public TestFragment build() {\n" +
+                        "    TestFragment fragment = new TestFragment();\n" +
+                        "    fragment.setArguments(mArguments);\n" +
+                        "    return fragment;\n" +
+                        "  }\n" +
+                        "  public <F extends TestFragment> F build(F fragment) {\n" +
+                        "    fragment.setArguments(mArguments);\n" +
+                        "    return fragment;\n" +
+                        "  }\n" +
+                        "}"));
+    }
+
+    @Test
+    public void testCopyNonNullAnnotationToBuilder() {
+        Compilation compilation = javac().
+                withProcessors(new FragmentArgumentsProcessor()).
+                compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
+                        "\n" +
+                        "import android.app.Fragment;\n" +
+                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "\n" +
+                        "public class TestFragment extends Fragment {\n" +
+                        "    @Argument\n" +
+                        "    String mTestStringArgument;\n" +
+                        "    @Argument(required=false)\n" +
+                        "    @NonNull\n" +
+                        "    int mTestPrimitive;\n" +
+                        "    @Argument\n" +
+                        "    @NonNull\n" +
+                        "    Integer mTestInteger;\n" +
+                        "}\n"));
+        assertThat(compilation).succeeded();
+        assertThat(compilation).generatedSourceFile("nl.littlerobots.test.TestFragmentBuilder").
+                hasSourceEquivalentTo(JavaFileObjects.forSourceString("nl.littlerobots.test.TestFragmentBuilder", "package nl.littlerobots.test;\n" +
+                        "\n" +
+                        "import android.os.Bundle;\n" +
+                        "public final class TestFragmentBuilder {\n" +
+                        "  private final Bundle mArguments = new Bundle();\n" +
+                        "\n" +
+                        "  public TestFragmentBuilder(@NonNull Integer testInteger, String testStringArgument) {\n" +
+                        "    if (testInteger == null) {\n" +
+                        "      throw new IllegalStateException(\"testInteger must not be null\");\n" +
+                        "    }\n" +
+                        "    mArguments.putInt(\"testInteger\", testInteger);\n" +
+                        "    mArguments.putString(\"testStringArgument\", testStringArgument);\n" +
+                        "  }\n" +
+                        "  public static TestFragment newTestFragment(@NonNull Integer testInteger, String testStringArgument) {\n" +
+                        "    return new TestFragmentBuilder(testInteger, testStringArgument).build();\n" +
+                        "  }\n" +
+                        "\n" +
+                        "  public TestFragmentBuilder testPrimitive(@NonNull int testPrimitive) {\n" +
+                        "    mArguments.putInt(\"testPrimitive\", testPrimitive);\n" +
+                        "    return this;\n" +
+                        "  }\n" +
+                        "  static final void injectArguments(TestFragment fragment) {\n" +
+                        "    Bundle args = fragment.getArguments();\n" +
+                        "    if (args == null) {\n" +
+                        "      throw new IllegalStateException(\"No arguments set\");\n" +
+                        "    }\n" +
+                        "    if (!args.containsKey(\"testInteger\")) {\n" +
+                        "      throw new IllegalStateException(\"required argument testInteger is not set\");\n" +
+                        "    }\n" +
+                        "    fragment.mTestInteger = args.getInt(\"testInteger\");\n" +
+                        "    if (args.containsKey(\"testPrimitive\")) {\n" +
+                        "      fragment.mTestPrimitive = args.getInt(\"testPrimitive\");\n" +
+                        "    }\n" +
+                        "    if (!args.containsKey(\"testStringArgument\")) {\n" +
+                        "      throw new IllegalStateException(\"required argument testStringArgument is not set\");\n" +
+                        "    }\n" +
+                        "    fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
+                        "  }\n" +
+                        "  public TestFragment build() {\n" +
+                        "    TestFragment fragment = new TestFragment();\n" +
+                        "    fragment.setArguments(mArguments);\n" +
+                        "    return fragment;\n" +
+                        "  }\n" +
+                        "  public <F extends TestFragment> F build(F fragment) {\n" +
+                        "    fragment.setArguments(mArguments);\n" +
+                        "    return fragment;\n" +
+                        "  }\n" +
+                        "}"));
+    }
 }

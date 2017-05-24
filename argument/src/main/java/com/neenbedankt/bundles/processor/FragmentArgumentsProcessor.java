@@ -6,6 +6,7 @@ import com.squareup.javawriter.JavaWriter;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -30,9 +31,9 @@ import java.util.TreeSet;
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Argument")
 public class FragmentArgumentsProcessor extends BaseProcessor {
 
-    private Set<AnnotatedField> collectArgumentsForType(Types typeUtil, TypeElement type,
-            Map<TypeElement, Set<Element>> fieldsByType, boolean requiredOnly, boolean processSuperClass) {
-        Set<AnnotatedField> arguments = new TreeSet<AnnotatedField>();
+    private Set<ArgumentAnnotatedField> collectArgumentsForType(Types typeUtil, TypeElement type,
+                                                                Map<TypeElement, Set<Element>> fieldsByType, boolean requiredOnly, boolean processSuperClass) {
+        Set<ArgumentAnnotatedField> arguments = new TreeSet<>();
         if (processSuperClass) {
             TypeMirror superClass = type.getSuperclass();
             if (superClass.getKind() != TypeKind.NONE) {
@@ -63,7 +64,8 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         Filer filer = processingEnv.getFiler();
         TypeElement fragmentType = elementUtils.getTypeElement("android.app.Fragment");
         TypeElement supportFragmentType = elementUtils.getTypeElement("android.support.v4.app.Fragment");
-        Map<TypeElement, Set<Element>> fieldsByType = new HashMap<TypeElement, Set<Element>>(100);
+
+        Map<TypeElement, Set<Element>> fieldsByType = new HashMap<>(100);
 
         for (Element element : env.getElementsAnnotatedWith(Argument.class)) {
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
@@ -84,7 +86,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
             }
             Set<Element> fields = fieldsByType.get(enclosingElement);
             if (fields == null) {
-                fields = new LinkedHashSet<Element>(10);
+                fields = new LinkedHashSet<>(10);
                 fieldsByType.put(enclosingElement, fields);
             }
             fields.add(element);
@@ -93,7 +95,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         for (Entry<TypeElement, Set<Element>> entry : fieldsByType.entrySet()) {
             try {
                 String builder = entry.getKey().getSimpleName() + "Builder";
-                List<Element> originating = new ArrayList<Element>(10);
+                List<Element> originating = new ArrayList<>(10);
                 originating.add(entry.getKey());
                 TypeMirror superClass = entry.getKey().getSuperclass();
                 while (superClass.getKind() != TypeKind.NONE) {
@@ -114,19 +116,19 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 jw.emitField("Bundle", "mArguments", EnumSet.of(Modifier.PRIVATE, Modifier.FINAL), "new Bundle()");
                 jw.emitEmptyLine();
 
-                Set<AnnotatedField> required = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, true,
+                Set<ArgumentAnnotatedField> required = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, true,
                         true);
 
                 String[] args = new String[required.size() * 2];
                 int index = 0;
-                for (AnnotatedField arg : required) {
-                    args[index++] = arg.getType();
+                for (ArgumentAnnotatedField arg : required) {
+                    args[index++] = getArgumentAnnotations(arg) + arg.getType();
                     args[index++] = arg.getVariableName();
                 }
                 jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
 
-                for (AnnotatedField arg : required) {
-                    writePutArguments(jw, arg.getVariableName(), "mArguments", arg);
+                for (ArgumentAnnotatedField arg : required) {
+                    writePutArguments(jw, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation());
                 }
 
                 jw.endMethod();
@@ -135,12 +137,12 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                     writeNewFragmentWithRequiredMethod(builder, entry.getKey(), jw, args);
                 }
 
-                Set<AnnotatedField> allArguments = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType,
+                Set<ArgumentAnnotatedField> allArguments = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType,
                         false, true);
-                Set<AnnotatedField> optionalArguments = new HashSet<AnnotatedField>(allArguments);
+                Set<ArgumentAnnotatedField> optionalArguments = new HashSet<>(allArguments);
                 optionalArguments.removeAll(required);
 
-                for (AnnotatedField arg : optionalArguments) {
+                for (ArgumentAnnotatedField arg : optionalArguments) {
                     writeBuilderMethod(builder, jw, arg);
                 }
 
@@ -157,6 +159,18 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         }
 
         return true;
+    }
+
+    private String getArgumentAnnotations(ArgumentAnnotatedField arg) {
+        StringBuilder argumentAnnotations = new StringBuilder();
+        List<AnnotationMirror> annotations = arg.getSourceAnnotations();
+        for (AnnotationMirror am : annotations) {
+            argumentAnnotations.append("@").
+                    append(am.getAnnotationType().asElement().toString()).
+                    append(" ");
+
+        }
+        return argumentAnnotations.toString();
     }
 
     private void writeNewFragmentWithRequiredMethod(String builder, TypeElement element, JavaWriter jw, String[] args)
@@ -189,7 +203,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         jw.endMethod();
     }
 
-    private void writeInjectMethod(JavaWriter jw, TypeElement element, Set<AnnotatedField> allArguments)
+    private void writeInjectMethod(JavaWriter jw, TypeElement element, Set<ArgumentAnnotatedField> allArguments)
             throws IOException {
         jw.beginMethod("void", "injectArguments", EnumSet.of(Modifier.STATIC, Modifier.FINAL),
                 element.getSimpleName().toString(), "fragment");
@@ -223,11 +237,11 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         jw.endMethod();
     }
 
-    private void writeBuilderMethod(String type, JavaWriter writer, AnnotatedField arg) throws IOException {
+    private void writeBuilderMethod(String type, JavaWriter writer, ArgumentAnnotatedField arg) throws IOException {
         writer.emitEmptyLine();
-        writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), arg.getType(),
+        writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), getArgumentAnnotations(arg) + arg.getType(),
                 arg.getVariableName());
-        writePutArguments(writer, arg.getVariableName(), "mArguments", arg);
+        writePutArguments(writer, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation());
         writer.emitStatement("return this");
         writer.endMethod();
     }

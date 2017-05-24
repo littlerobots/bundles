@@ -102,7 +102,7 @@ public abstract class BaseProcessor extends AbstractProcessor {
         return processingEnv.getTypeUtils().getDeclaredType(arrayList, elType);
     }
 
-    protected void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable, AnnotatedField arg) throws IOException {
+    protected void writePutArguments(JavaWriter jw, String sourceVariable, String bundleVariable, AnnotatedField arg, boolean nullCheck) throws IOException {
         String op = getOperation(arg);
 
         if (op == null) {
@@ -111,6 +111,12 @@ public abstract class BaseProcessor extends AbstractProcessor {
         }
         if ("Serializable".equals(op)) {
             processingEnv.getMessager().printMessage(Kind.WARNING, String.format("%1$s will be stored as Serializable", arg.getName()), arg.getElement());
+        }
+
+        if (nullCheck && !arg.getElement().asType().getKind().isPrimitive()) {
+            jw.beginControlFlow("if (" + sourceVariable + " == null)");
+            jw.emitStatement("throw new IllegalStateException(\"%1$s must not be null\")", arg.getKey());
+            jw.endControlFlow();
         }
         jw.emitStatement("%4$s.put%1$s(\"%2$s\", %3$s)", op, arg.getKey(), sourceVariable, bundleVariable);
     }

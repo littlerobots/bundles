@@ -10,6 +10,8 @@ import java.util.List;
 public class ArgumentAnnotatedField extends AnnotatedField {
 
     private final List<AnnotationMirror> sourceAnnotations;
+    private boolean nullableAnnotation = false;
+    private boolean nonNullAnnotation = false;
 
     public ArgumentAnnotatedField(Element element) {
         super(element, isRequired(element), getKey(element));
@@ -19,8 +21,13 @@ public class ArgumentAnnotatedField extends AnnotatedField {
     private List<AnnotationMirror> collectSourceAnnotations(Element element) {
         List<AnnotationMirror> annotationMirrors = new ArrayList<>(element.getAnnotationMirrors().size());
         for (AnnotationMirror am : element.getAnnotationMirrors()) {
-            if (am.getAnnotationType().asElement().getSimpleName().toString().equals("Nullable") ||
-                    am.getAnnotationType().asElement().getSimpleName().toString().equals("NonNull")) {
+            if (am.getAnnotationType().asElement().getSimpleName().toString().equals("Nullable")) {
+                nullableAnnotation = true;
+                annotationMirrors.add(am);
+            } else if (am.getAnnotationType().asElement().getSimpleName().toString().equals("NonNull")) {
+                nonNullAnnotation = true;
+                annotationMirrors.add(am);
+            } else if (am.getAnnotationType().asElement().toString().startsWith("android.support.annotation.")) {
                 annotationMirrors.add(am);
             }
         }
@@ -43,6 +50,14 @@ public class ArgumentAnnotatedField extends AnnotatedField {
     private static boolean isRequired(Element element) {
         Argument annotation = element.getAnnotation(Argument.class);
         return annotation.required();
+    }
+
+    public boolean hasNullableAnnotation() {
+        return nullableAnnotation;
+    }
+
+    public boolean hasNonNullAnnotation() {
+        return nonNullAnnotation;
     }
 
 }
