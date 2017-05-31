@@ -6,6 +6,7 @@ import com.squareup.javawriter.JavaWriter;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
@@ -29,7 +30,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 @SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Argument")
+@SupportedOptions(value = FragmentArgumentsProcessor.OPT_DEFAULT_NULLABLE)
 public class FragmentArgumentsProcessor extends BaseProcessor {
+
+    final static String OPT_DEFAULT_NULLABLE = "argument.default.nullable";
 
     private Set<ArgumentAnnotatedField> collectArgumentsForType(Types typeUtil, TypeElement type,
                                                                 Map<TypeElement, Set<Element>> fieldsByType, boolean requiredOnly, boolean processSuperClass) {
@@ -64,6 +68,9 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         Filer filer = processingEnv.getFiler();
         TypeElement fragmentType = elementUtils.getTypeElement("android.app.Fragment");
         TypeElement supportFragmentType = elementUtils.getTypeElement("android.support.v4.app.Fragment");
+        TypeElement supportNonNull = elementUtils.getTypeElement("android.support.annotation.NonNull");
+
+        boolean defaultNonNull = supportNonNull != null && !Boolean.parseBoolean(processingEnv.getOptions().get(OPT_DEFAULT_NULLABLE));
 
         Map<TypeElement, Set<Element>> fieldsByType = new HashMap<>(100);
 
@@ -112,23 +119,35 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 JavaWriter jw = new JavaWriter(writer);
                 writePackage(jw, entry.getKey());
                 jw.emitImports("android.os.Bundle");
+
+                Set<ArgumentAnnotatedField> required = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, true,
+                        true);
+                Set<ArgumentAnnotatedField> allArguments = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType,
+                        false, true);
+
+                if (defaultNonNull) {
+                    for (ArgumentAnnotatedField arg : allArguments) {
+                        if (markAsNonNullDefault(arg)) {
+                            jw.emitImports("android.support.annotation.NonNull");
+                            break;
+                        }
+                    }
+                }
+
                 jw.beginType(builder, "class", EnumSet.of(Modifier.PUBLIC, Modifier.FINAL));
                 jw.emitField("Bundle", "mArguments", EnumSet.of(Modifier.PRIVATE, Modifier.FINAL), "new Bundle()");
                 jw.emitEmptyLine();
 
-                Set<ArgumentAnnotatedField> required = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, true,
-                        true);
-
                 String[] args = new String[required.size() * 2];
                 int index = 0;
                 for (ArgumentAnnotatedField arg : required) {
-                    args[index++] = getArgumentAnnotations(arg) + arg.getType();
+                    args[index++] = getArgumentAnnotations(arg, defaultNonNull) + arg.getType();
                     args[index++] = arg.getVariableName();
                 }
                 jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
 
                 for (ArgumentAnnotatedField arg : required) {
-                    writePutArguments(jw, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation());
+                    writePutArguments(jw, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation() || defaultNonNull);
                 }
 
                 jw.endMethod();
@@ -137,13 +156,11 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                     writeNewFragmentWithRequiredMethod(builder, entry.getKey(), jw, args);
                 }
 
-                Set<ArgumentAnnotatedField> allArguments = collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType,
-                        false, true);
                 Set<ArgumentAnnotatedField> optionalArguments = new HashSet<>(allArguments);
                 optionalArguments.removeAll(required);
 
                 for (ArgumentAnnotatedField arg : optionalArguments) {
-                    writeBuilderMethod(builder, jw, arg);
+                    writeBuilderMethod(builder, jw, arg, defaultNonNull);
                 }
 
                 writeInjectMethod(jw, entry.getKey(),
@@ -161,7 +178,11 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         return true;
     }
 
-    private String getArgumentAnnotations(ArgumentAnnotatedField arg) {
+    private boolean markAsNonNullDefault(ArgumentAnnotatedField arg) {
+        return !arg.hasNullableAnnotation() && !arg.hasNonNullAnnotation() && !arg.getElement().asType().getKind().isPrimitive();
+    }
+
+    private String getArgumentAnnotations(ArgumentAnnotatedField arg, boolean defaultNonNull) {
         StringBuilder argumentAnnotations = new StringBuilder();
         List<AnnotationMirror> annotations = arg.getSourceAnnotations();
         for (AnnotationMirror am : annotations) {
@@ -169,6 +190,9 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                     append(am.getAnnotationType().asElement().toString()).
                     append(" ");
 
+        }
+        if (defaultNonNull && markAsNonNullDefault(arg)) {
+            argumentAnnotations.append("@NonNull ");
         }
         return argumentAnnotations.toString();
     }
@@ -237,11 +261,11 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         jw.endMethod();
     }
 
-    private void writeBuilderMethod(String type, JavaWriter writer, ArgumentAnnotatedField arg) throws IOException {
+    private void writeBuilderMethod(String type, JavaWriter writer, ArgumentAnnotatedField arg, boolean defaultNonNull) throws IOException {
         writer.emitEmptyLine();
-        writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), getArgumentAnnotations(arg) + arg.getType(),
+        writer.beginMethod(type, arg.getVariableName(), EnumSet.of(Modifier.PUBLIC), getArgumentAnnotations(arg, defaultNonNull) + arg.getType(),
                 arg.getVariableName());
-        writePutArguments(writer, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation());
+        writePutArguments(writer, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation() || defaultNonNull);
         writer.emitStatement("return this");
         writer.endMethod();
     }
