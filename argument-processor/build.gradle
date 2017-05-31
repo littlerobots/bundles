@@ -2,6 +2,7 @@ uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Argument annotati
 
 dependencies {
     compile project(':common')
+    compile project(':argument-annotation')
     testCompile project(':android-mocks')
     testCompile 'junit:junit:4.12'
     testCompile 'com.google.testing.compile:compile-testing:0.11'
