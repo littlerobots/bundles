@@ -1,4 +1,4 @@
-package com.neenbedankt.bundles.annotation;
+package nl.littlerobots.bundles.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

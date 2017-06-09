@@ -16,7 +16,7 @@ allprojects {
     apply plugin: "maven"
     apply plugin: 'signing'
 
-    group = "com.neenbedankt.bundles"
+    group = "nl.littlerobots.bundles"
 
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
@@ -78,12 +78,12 @@ subprojects {
                     name 'Bundles'
                     packaging 'jar'
                     description 'Bundles is a set of annotation processors for Android source code'
-                    url 'https://bitbucket.org/hvisser/bundles'
+                    url 'https://bitbucket.org/littlerobots/bundles'
 
                     scm {
-                        url 'https://bitbucket.org/hvisser/bundles'
-                        connection 'scm:hg:https://bitbucket.org/hvisser/bundles'
-                        developerConnection 'scm:hg:https://bitbucket.org/hvisser/bundles'
+                        url 'https://bitbucket.org/littlerobots/bundles'
+                        connection 'scm:hg:https://bitbucket.org/littlerobots/bundles'
+                        developerConnection 'scm:hg:https://bitbucket.org/littlerobots/bundles'
                     }
 
                     licenses {

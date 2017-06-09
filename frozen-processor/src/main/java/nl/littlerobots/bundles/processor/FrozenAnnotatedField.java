@@ -1,4 +1,4 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
 import javax.lang.model.element.Element;
 

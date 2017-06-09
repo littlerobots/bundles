@@ -1,6 +1,6 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
-import com.neenbedankt.bundles.annotation.Frozen;
+import nl.littlerobots.bundles.annotation.Frozen;
 import nl.littlerobots.bundles.internal.com.squareup.javawriter.JavaWriter;
 
 import javax.annotation.processing.RoundEnvironment;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-@SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Frozen")
+@SupportedAnnotationTypes("nl.littlerobots.bundles.annotation.Frozen")
 public class FrozenFieldsProcessor extends BaseProcessor {
 
     @Override

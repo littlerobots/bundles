@@ -1,6 +1,6 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
-import com.neenbedankt.bundles.annotation.Argument;
+import nl.littlerobots.bundles.annotation.Argument;
 import nl.littlerobots.bundles.internal.com.squareup.javawriter.JavaWriter;
 
 import javax.annotation.processing.Filer;
@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-@SupportedAnnotationTypes("com.neenbedankt.bundles.annotation.Argument")
+@SupportedAnnotationTypes("nl.littlerobots.bundles.annotation.Argument")
 @SupportedOptions(value = FragmentArgumentsProcessor.OPT_DEFAULT_NULLABLE)
 public class FragmentArgumentsProcessor extends BaseProcessor {
 

@@ -1,4 +1,4 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
 import nl.littlerobots.bundles.internal.com.squareup.javawriter.JavaWriter;
 

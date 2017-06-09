@@ -1,4 +1,4 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
 import javax.lang.model.element.Element;
 
@@ -18,10 +18,6 @@ abstract class AnnotatedField implements Comparable<AnnotatedField> {
         this.required = required;
     }
 
-    public String getVariableName() {
-        return getVariableName(name);
-    }
-
     public static String getVariableName(String name) {
         if (name.matches("^m[A-Z]{1}")) {
             return name.substring(1, 2).toLowerCase();
@@ -29,6 +25,10 @@ abstract class AnnotatedField implements Comparable<AnnotatedField> {
             return name.substring(1, 2).toLowerCase() + name.substring(2);
         }
         return name;
+    }
+
+    public String getVariableName() {
+        return getVariableName(name);
     }
 
     public String getKey() {

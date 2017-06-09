@@ -1,4 +1,4 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
@@ -17,7 +17,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument\n" +
@@ -33,7 +33,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.support.v4.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument\n" +
@@ -49,7 +49,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument\n" +
@@ -108,7 +108,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument\n" +
@@ -159,7 +159,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument(required=false)\n" +
@@ -217,7 +217,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument\n" +
@@ -287,7 +287,7 @@ public class FragmentArgumentsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
                         "\n" +
                         "import android.app.Fragment;\n" +
-                        "import com.neenbedankt.bundles.annotation.Argument;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
                         "\n" +
                         "public class TestFragment extends Fragment {\n" +
                         "    @Argument\n" +

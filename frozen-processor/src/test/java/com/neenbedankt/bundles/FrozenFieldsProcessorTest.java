@@ -3,7 +3,7 @@ package com.neenbedankt.bundles;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
-import com.neenbedankt.bundles.processor.FrozenFieldsProcessor;
+import nl.littlerobots.bundles.processor.FrozenFieldsProcessor;
 import org.junit.Test;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
@@ -20,7 +20,7 @@ public class FrozenFieldsProcessorTest {
                         "import android.app.Activity.Activity;\n" +
                         "import android.os.Bundle;\n" +
                         "import android.os.Parcelable;\n" +
-                        "import com.neenbedankt.bundles.annotation.Frozen;\n" +
+                        "import nl.littlerobots.bundles.annotation.Frozen;\n" +
                         "\n" +
                         "import java.util.ArrayList;\n" +
                         "import java.util.Date;\n" +
@@ -88,7 +88,7 @@ public class FrozenFieldsProcessorTest {
                 compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestActivity", "package com.neenbedankt.bundles;\n" +
                         "\n" +
                         "import android.app.Activity.Activity;\n" +
-                        "import com.neenbedankt.bundles.annotation.Frozen;\n" +
+                        "import nl.littlerobots.bundles.annotation.Frozen;\n" +
                         "\n" +
                         "import java.util.ArrayList;\n" +
                         "\n" +

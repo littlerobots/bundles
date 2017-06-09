@@ -1,6 +1,6 @@
-package com.neenbedankt.bundles.processor;
+package nl.littlerobots.bundles.processor;
 
-import com.neenbedankt.bundles.annotation.Argument;
+import nl.littlerobots.bundles.annotation.Argument;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -16,6 +16,20 @@ public class ArgumentAnnotatedField extends AnnotatedField {
     public ArgumentAnnotatedField(Element element) {
         super(element, isRequired(element), getKey(element));
         sourceAnnotations = collectSourceAnnotations(element);
+    }
+
+    private static String getKey(Element element) {
+        Argument annotation = element.getAnnotation(Argument.class);
+        String field = element.getSimpleName().toString();
+        if (!"".equals(annotation.key())) {
+            return annotation.key();
+        }
+        return getVariableName(field);
+    }
+
+    private static boolean isRequired(Element element) {
+        Argument annotation = element.getAnnotation(Argument.class);
+        return annotation.required();
     }
 
     private List<AnnotationMirror> collectSourceAnnotations(Element element) {
@@ -36,20 +50,6 @@ public class ArgumentAnnotatedField extends AnnotatedField {
 
     public List<AnnotationMirror> getSourceAnnotations() {
         return sourceAnnotations;
-    }
-
-    private static String getKey(Element element) {
-        Argument annotation = element.getAnnotation(Argument.class);
-        String field = element.getSimpleName().toString();
-        if (!"".equals(annotation.key())) {
-            return annotation.key();
-        }
-        return getVariableName(field);
-    }
-
-    private static boolean isRequired(Element element) {
-        Argument annotation = element.getAnnotation(Argument.class);
-        return annotation.required();
     }
 
     public boolean hasNullableAnnotation() {
