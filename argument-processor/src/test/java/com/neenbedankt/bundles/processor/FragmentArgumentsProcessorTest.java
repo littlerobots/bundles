@@ -78,8 +78,13 @@ public class FragmentArgumentsProcessorTest {
                         "    if (args == null) {\n" +
                         "      throw new IllegalStateException(\"No arguments set\");\n" +
                         "    }\n" +
-                        "    if (!args.containsKey(\"testStringArgument\")) {\n" +
+                        "    boolean containsKey;\n" +
+                        "    containsKey = args.containsKey(\"testStringArgument\");\n" +
+                        "    if (!containsKey) {\n" +
                         "      throw new IllegalStateException(\"required argument testStringArgument is not set\");\n" +
+                        "    }\n" +
+                        "    if (args.getString(\"testStringArgument\") == null) {\n" +
+                        "      throw new IllegalStateException(\"testStringArgument must not be null\");\n" +
                         "    }\n" +
                         "    fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
                         "  }\n" +
@@ -92,7 +97,7 @@ public class FragmentArgumentsProcessorTest {
                         "    fragment.setArguments(mArguments);\n" +
                         "    return fragment;\n" +
                         "  }\n" +
-                        "}"));
+                        "}\n"));
     }
 
     @Test
@@ -128,7 +133,9 @@ public class FragmentArgumentsProcessorTest {
                         "    if (args == null) {\n" +
                         "      throw new IllegalStateException(\"No arguments set\");\n" +
                         "    }\n" +
-                        "    if (!args.containsKey(\"testStringArgument\")) {\n" +
+                        "    boolean containsKey;\n" +
+                        "    containsKey = args.containsKey(\"testStringArgument\");\n" +
+                        "    if (!containsKey) {\n" +
                         "      throw new IllegalStateException(\"required argument testStringArgument is not set\");\n" +
                         "    }\n" +
                         "    fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
@@ -182,7 +189,12 @@ public class FragmentArgumentsProcessorTest {
                         "    if (args == null) {\n" +
                         "      throw new IllegalStateException(\"No arguments set\");\n" +
                         "    }\n" +
-                        "    if (args.containsKey(\"testStringArgument\")) {\n" +
+                        "    boolean containsKey;\n" +
+                        "    containsKey = args.containsKey(\"testStringArgument\");\n" +
+                        "    if (containsKey) {\n" +
+                        "      if (args.getString(\"testStringArgument\") == null) {\n" +
+                        "        throw new IllegalStateException(\"testStringArgument must not be null\");\n" +
+                        "      }\n" +
                         "      fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
                         "    }\n" +
                         "  }\n" +
@@ -245,11 +257,14 @@ public class FragmentArgumentsProcessorTest {
                         "    if (args == null) {\n" +
                         "      throw new IllegalStateException(\"No arguments set\");\n" +
                         "    }\n" +
-                        "    if (!args.containsKey(\"testStringArgument\")) {\n" +
+                        "    boolean containsKey;\n" +
+                        "    containsKey = args.containsKey(\"testStringArgument\");\n" +
+                        "    if (!containsKey) {\n" +
                         "      throw new IllegalStateException(\"required argument testStringArgument is not set\");\n" +
                         "    }\n" +
                         "    fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
-                        "    if (args.containsKey(\"testStringArgument2\")) {\n" +
+                        "    containsKey = args.containsKey(\"testStringArgument2\");\n" +
+                        "    if (containsKey) {\n" +
                         "      fragment.mTestStringArgument2 = args.getString(\"testStringArgument2\");\n" +
                         "    }\n" +
                         "  }\n" +
@@ -316,15 +331,22 @@ public class FragmentArgumentsProcessorTest {
                         "    if (args == null) {\n" +
                         "      throw new IllegalStateException(\"No arguments set\");\n" +
                         "    }\n" +
-                        "    if (!args.containsKey(\"testInteger\")) {\n" +
+                        "    boolean containsKey;\n" +
+                        "    containsKey = args.containsKey(\"testInteger\");\n" +
+                        "    if (!containsKey) {\n" +
                         "      throw new IllegalStateException(\"required argument testInteger is not set\");\n" +
                         "    }\n" +
                         "    fragment.mTestInteger = args.getInt(\"testInteger\");\n" +
-                        "    if (args.containsKey(\"testPrimitive\")) {\n" +
+                        "    containsKey = args.containsKey(\"testPrimitive\");\n" +
+                        "    if (containsKey) {\n" +
                         "      fragment.mTestPrimitive = args.getInt(\"testPrimitive\");\n" +
                         "    }\n" +
-                        "    if (!args.containsKey(\"testStringArgument\")) {\n" +
+                        "    containsKey = args.containsKey(\"testStringArgument\");\n" +
+                        "    if (!containsKey) {\n" +
                         "      throw new IllegalStateException(\"required argument testStringArgument is not set\");\n" +
+                        "    }\n" +
+                        "    if (args.getString(\"testStringArgument\") == null) {\n" +
+                        "      throw new IllegalStateException(\"testStringArgument must not be null\");\n" +
                         "    }\n" +
                         "    fragment.mTestStringArgument = args.getString(\"testStringArgument\");\n" +
                         "  }\n" +
@@ -337,6 +359,6 @@ public class FragmentArgumentsProcessorTest {
                         "    fragment.setArguments(mArguments);\n" +
                         "    return fragment;\n" +
                         "  }\n" +
-                        "}\n"));
+                        "}"));
     }
 }

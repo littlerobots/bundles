@@ -68,9 +68,8 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         Filer filer = processingEnv.getFiler();
         TypeElement fragmentType = elementUtils.getTypeElement("android.app.Fragment");
         TypeElement supportFragmentType = elementUtils.getTypeElement("android.support.v4.app.Fragment");
-        TypeElement supportNonNull = elementUtils.getTypeElement("android.support.annotation.NonNull");
 
-        boolean defaultNonNull = supportNonNull != null && !Boolean.parseBoolean(processingEnv.getOptions().get(OPT_DEFAULT_NULLABLE));
+        boolean defaultNonNull = !Boolean.parseBoolean(processingEnv.getOptions().get(OPT_DEFAULT_NULLABLE));
 
         Map<TypeElement, Set<Element>> fieldsByType = new HashMap<>(100);
 
@@ -164,7 +163,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 }
 
                 writeInjectMethod(jw, entry.getKey(),
-                        collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, false, false));
+                        collectArgumentsForType(typeUtils, entry.getKey(), fieldsByType, false, false), defaultNonNull);
                 writeBuildMethod(jw, entry.getKey());
                 writeBuildSubclassMethod(jw, entry.getKey());
                 jw.endType();
@@ -227,7 +226,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         jw.endMethod();
     }
 
-    private void writeInjectMethod(JavaWriter jw, TypeElement element, Set<ArgumentAnnotatedField> allArguments)
+    private void writeInjectMethod(JavaWriter jw, TypeElement element, Set<ArgumentAnnotatedField> allArguments, boolean defaultNullCheck)
             throws IOException {
         jw.beginMethod("void", "injectArguments", EnumSet.of(Modifier.STATIC, Modifier.FINAL),
                 element.getSimpleName().toString(), "fragment");
@@ -237,18 +236,27 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
         jw.emitStatement("throw new IllegalStateException(\"No arguments set\")");
         jw.endControlFlow();
 
-        for (AnnotatedField type : allArguments) {
+        jw.emitStatement("boolean containsKey");
+
+        for (ArgumentAnnotatedField type : allArguments) {
             String op = getOperation(type);
             if (op == null) {
                 error(element, "Can't write injector, the bundle getter is unknown");
                 return;
             }
             String cast = "Serializable".equals(op) ? "(" + type.getType() + ") " : "";
+            jw.emitStatement("containsKey = args.containsKey(" + JavaWriter.stringLiteral(type.getKey()) + ")");
             if (!type.isRequired()) {
-                jw.beginControlFlow("if (args.containsKey("+JavaWriter.stringLiteral(type.getKey())+"))");
+                jw.beginControlFlow("if (containsKey)");
             } else {
-                jw.beginControlFlow("if (!args.containsKey("+JavaWriter.stringLiteral(type.getKey())+"))");
+                jw.beginControlFlow("if (!containsKey)");
                 jw.emitStatement("throw new IllegalStateException(\"required argument %1$s is not set\")", type.getKey());
+                jw.endControlFlow();
+            }
+
+            if (defaultNullCheck && markAsNonNullDefault(type)) {
+                jw.beginControlFlow("if (args.get%1$s(\"%2$s\") == null)", op, type.getKey());
+                jw.emitStatement("throw new IllegalStateException(\"%1$s must not be null\")", type.getKey());
                 jw.endControlFlow();
             }
 
