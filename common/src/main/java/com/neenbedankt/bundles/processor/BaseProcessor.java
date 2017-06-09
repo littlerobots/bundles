@@ -1,6 +1,6 @@
 package com.neenbedankt.bundles.processor;
 
-import com.squareup.javawriter.JavaWriter;
+import nl.littlerobots.bundles.internal.com.squareup.javawriter.JavaWriter;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.lang.model.SourceVersion;

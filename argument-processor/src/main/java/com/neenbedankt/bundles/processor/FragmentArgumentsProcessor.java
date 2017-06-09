@@ -1,7 +1,7 @@
 package com.neenbedankt.bundles.processor;
 
 import com.neenbedankt.bundles.annotation.Argument;
-import com.squareup.javawriter.JavaWriter;
+import nl.littlerobots.bundles.internal.com.squareup.javawriter.JavaWriter;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
