@@ -83,10 +83,10 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 continue;
             }
 
-            if (element.getModifiers().contains(Modifier.FINAL) || element.getModifiers().contains(Modifier.STATIC)
+            if (!hasSetter(element) && (element.getModifiers().contains(Modifier.FINAL) || element.getModifiers().contains(Modifier.STATIC)
                     || element.getModifiers().contains(Modifier.PRIVATE)
-                    || element.getModifiers().contains(Modifier.PROTECTED)) {
-                error(element, "@Argument fields must not be private, protected, final or static (%s.%s)",
+                    || element.getModifiers().contains(Modifier.PROTECTED))) {
+                error(element, "@Argument fields without a setter must not be private, protected, final or static (%s.%s).",
                         enclosingElement.getQualifiedName(), element);
                 continue;
             }
@@ -254,19 +254,35 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 jw.endControlFlow();
             }
 
-            if (defaultNullCheck && markAsNonNullDefault(type)) {
+            if (defaultNullCheck && markAsNonNullDefault(type) && !isBoxedType(type.getElement().asType())) {
                 jw.beginControlFlow("if (args.get%1$s(\"%2$s\") == null)", op, type.getKey());
                 jw.emitStatement("throw new IllegalStateException(\"%1$s must not be null\")", type.getKey());
                 jw.endControlFlow();
             }
 
-            jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", type.getName(), op, type.getKey(), cast);
+            Element setter = findSetter(type.getElement());
+            if (setter != null) {
+                jw.emitStatement("fragment.%1$s(%4$sargs.get%2$s(\"%3$s\"))", setter.getSimpleName().toString(), op, type.getKey(), cast);
+            } else {
+                jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", type.getName(), op, type.getKey(), cast);
+            }
+
 
             if (!type.isRequired()) {
                 jw.endControlFlow();
             }
         }
         jw.endMethod();
+    }
+
+    private boolean isBoxedType(TypeMirror type) {
+        try {
+            processingEnv.getTypeUtils().unboxedType(type);
+            return true;
+        } catch (IllegalArgumentException ex) {
+
+        }
+        return false;
     }
 
     private void writeBuilderMethod(String type, JavaWriter writer, ArgumentAnnotatedField arg, boolean defaultNonNull) throws IOException {

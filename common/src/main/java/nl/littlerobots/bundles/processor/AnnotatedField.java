@@ -35,17 +35,6 @@ abstract class AnnotatedField implements Comparable<AnnotatedField> {
         return this.key;
     }
 
-/*    private String getKey(Element element) {
-        //FIXME dependency on the Argument annotation...
-        Argument annotation = element.getAnnotation(Argument.class);
-        if (annotation != null) {
-            if (!"".equals(annotation.key()) && annotation.key() != null) {
-                return annotation.key();
-            }
-        }
-        return getVariableName();
-    }
-*/
     public String getName() {
         return name;
     }

@@ -119,4 +119,46 @@ public class FrozenFieldsProcessorTest {
         assertThat(compilation).succeeded();
     }
 
+    @Test
+    public void testUseGetterSetter() {
+        Compilation compilation = javac().
+                withProcessors(new FrozenFieldsProcessor()).
+                compile(JavaFileObjects.forSourceLines("nl.littlerobots.bundles.test.TestActivity", "package nl.littlerobots.bundles.test;\n" +
+                        "\n" +
+                        "import android.app.Activity.Activity;\n" +
+                        "import java.util.Date;\n" +
+                        "import nl.littlerobots.bundles.annotation.Frozen;\n" +
+                        "\n" +
+                        "import java.util.ArrayList;\n" +
+                        "\n" +
+                        "public class TestActivity extends Activity {\n" +
+                        "    @Frozen\n" +
+                        "    private int mTestValue;\n" +
+                        "    @Frozen\n" +
+                        "    private Date anotherTestValue;\n" +
+                        "    public final void setTestValue(int v) {};\n" +
+                        "    public final void setAnotherTestValue(Date v) {};\n" +
+                        "    public final int getTestValue() {return 0;}\n;" +
+                        "    public final Date getAnotherTestValue() {return new Date();}\n;" +
+                        "}\n"));
+        assertThat(compilation).generatedSourceFile("nl.littlerobots.bundles.test.TestActivityState").
+                hasSourceEquivalentTo(JavaFileObjects.forSourceString("nl.littlerobots.bundles.test.TestActivityState", "package nl.littlerobots.bundles.test;\n" +
+                        "\n" +
+                        "final class TestActivityState {\n" +
+                        "  private TestActivityState() {\n" +
+                        "  }\n" +
+                        "  static void saveInstanceState(TestActivity source, android.os.Bundle outState) {\n" +
+                        "    outState.putInt(\"testValue\", source.getTestValue());\n" +
+                        "    outState.putSerializable(\"anotherTestValue\", source.getAnotherTestValue());\n" +
+                        "  }\n" +
+                        "  static void restoreInstanceState(TestActivity target, android.os.Bundle savedInstanceState) {\n" +
+                        "    if (savedInstanceState == null) {\n" +
+                        "      return;\n" +
+                        "    }\n" +
+                        "    target.setTestValue(savedInstanceState.getInt(\"testValue\"));\n" +
+                        "    target.setAnotherTestValue((java.util.Date) savedInstanceState.getSerializable(\"anotherTestValue\"));\n" +
+                        "  }\n" +
+                        "}\n"));
+    }
+
 }

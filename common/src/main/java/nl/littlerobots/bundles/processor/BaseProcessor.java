@@ -5,6 +5,8 @@ import nl.littlerobots.bundles.internal.com.squareup.javawriter.JavaWriter;
 import javax.annotation.processing.AbstractProcessor;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -15,12 +17,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public abstract class BaseProcessor extends AbstractProcessor {
 
     private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(20);
+
     static {
         ARGUMENT_TYPES.put("java.lang.String", "String");
         ARGUMENT_TYPES.put("int", "Int");
@@ -52,7 +56,7 @@ public abstract class BaseProcessor extends AbstractProcessor {
         String op = ARGUMENT_TYPES.get(arg.getRawType());
         if (op != null) {
             if (arg.isArray()) {
-                return op+"Array";
+                return op + "Array";
             } else {
                 return op;
             }
@@ -61,9 +65,9 @@ public abstract class BaseProcessor extends AbstractProcessor {
         Elements elements = processingEnv.getElementUtils();
         TypeMirror type = arg.getElement().asType();
         Types types = processingEnv.getTypeUtils();
-        String[] arrayListTypes = new String[] { String.class.getName(), Integer.class.getName(), CharSequence.class.getName() };
-        String[] arrayListOps = new String[] { "StringArrayList", "IntegerArrayList", "CharSequenceArrayList"};
-        for (int i=0; i < arrayListTypes.length; i++) {
+        String[] arrayListTypes = new String[]{String.class.getName(), Integer.class.getName(), CharSequence.class.getName()};
+        String[] arrayListOps = new String[]{"StringArrayList", "IntegerArrayList", "CharSequenceArrayList"};
+        for (int i = 0; i < arrayListTypes.length; i++) {
             TypeMirror tm = getArrayListType(arrayListTypes[i]);
             if (types.isAssignable(type, tm)) {
                 return arrayListOps[i];
@@ -130,9 +134,59 @@ public abstract class BaseProcessor extends AbstractProcessor {
             jw.emitPackage("");
         }
     }
+
     @Override
     public SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latestSupported();
     }
 
+    protected boolean hasSetter(Element element) {
+        return findSetter(element) != null;
+    }
+
+    protected boolean hasGetter(Element element) {
+        return findGetter(element) != null;
+    }
+
+    protected Element findSetter(Element element) {
+        String name = "set" + uppercaseFirstLetter(element.getSimpleName().toString());
+        String varName = "set" + uppercaseFirstLetter(AnnotatedField.getVariableName(element.getSimpleName().toString()));
+
+
+        List<? extends Element> elements = processingEnv.getElementUtils().getAllMembers((TypeElement) element.getEnclosingElement());
+        for (Element e : elements) {
+            if (e.getKind() == ElementKind.METHOD && (e.getSimpleName().toString().equals(name) || e.getSimpleName().toString().equals(varName))) {
+                ExecutableElement method = (ExecutableElement) e;
+                if (method.getParameters().size() == 1 && method.getParameters().get(0).asType() == element.asType()) {
+                    return e;
+                }
+            }
+        }
+        return null;
+    }
+
+    protected Element findGetter(Element element) {
+        String name = "get" + uppercaseFirstLetter(element.getSimpleName().toString());
+        String varName = "get" + uppercaseFirstLetter(AnnotatedField.getVariableName(element.getSimpleName().toString()));
+
+
+        List<? extends Element> elements = processingEnv.getElementUtils().getAllMembers((TypeElement) element.getEnclosingElement());
+        for (Element e : elements) {
+            if (e.getKind() == ElementKind.METHOD && (e.getSimpleName().toString().equals(name) || e.getSimpleName().toString().equals(varName))) {
+                ExecutableElement method = (ExecutableElement) e;
+                if (method.getParameters().size() == 0 && method.getReturnType() == element.asType()) {
+                    return e;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String uppercaseFirstLetter(String name) {
+        if (name.length() == 1) {
+            return name.toUpperCase();
+        } else {
+            return name.substring(0, 1).toUpperCase() + name.substring(1);
+        }
+    }
 }

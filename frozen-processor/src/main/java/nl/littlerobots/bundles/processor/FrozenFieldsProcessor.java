@@ -26,11 +26,12 @@ public class FrozenFieldsProcessor extends BaseProcessor {
         Set<? extends Element> elements = env.getElementsAnnotatedWith(Frozen.class);
         Map<TypeElement, Set<AnnotatedField>> fieldsByType = new HashMap<TypeElement, Set<AnnotatedField>>(100);
         for (Element element : elements) {
-            if (element.getModifiers().contains(Modifier.FINAL) ||
+            if (!(hasSetter(element) && hasGetter(element)) &&
+                    (element.getModifiers().contains(Modifier.FINAL) ||
                 element.getModifiers().contains(Modifier.STATIC) ||
                 element.getModifiers().contains(Modifier.PROTECTED) ||
-                element.getModifiers().contains(Modifier.PRIVATE)) {
-                error(element, "Field must not be private, protected, static or final");
+                            element.getModifiers().contains(Modifier.PRIVATE))) {
+                error(element, "Field does not have a getter and setter and is private, protected, static or final");
                 continue;
             }
             Set<AnnotatedField> fields = fieldsByType.get(element.getEnclosingElement());
@@ -79,7 +80,12 @@ public class FrozenFieldsProcessor extends BaseProcessor {
                 return;
             }
             String cast = "Serializable".equals(op) ? "("+field.getType()+") " :  "";
-            jw.emitStatement("target.%1$s = %4$ssavedInstanceState.get%2$s(\"%3$s\")", field.getName(), op, field.getKey(), cast);
+            Element setter = findSetter(field.getElement());
+            if (setter != null) {
+                jw.emitStatement("target.%1$s(%2$ssavedInstanceState.get%3$s(\"%4$s\"))", setter.getSimpleName().toString(), cast, op, field.getKey());
+            } else {
+                jw.emitStatement("target.%1$s = %4$ssavedInstanceState.get%2$s(\"%3$s\")", field.getName(), op, field.getKey(), cast);
+            }
         }
         jw.endMethod();
     }
@@ -87,7 +93,12 @@ public class FrozenFieldsProcessor extends BaseProcessor {
     private void writeOnSaveInstanceState(JavaWriter jw, TypeElement key, Set<AnnotatedField> fields) throws IOException {
         jw.beginMethod("void", "saveInstanceState", EnumSet.of(Modifier.STATIC), key.getQualifiedName().toString(), "source", "android.os.Bundle", "outState");
         for (AnnotatedField field : fields) {
-            writePutArguments(jw, String.format("source.%s", field.getName()), "outState", field, false);
+            Element getter = findGetter(field.getElement());
+            if (getter != null) {
+                writePutArguments(jw, String.format("source.%s()", getter.getSimpleName().toString()), "outState", field, false);
+            } else {
+                writePutArguments(jw, String.format("source.%s", field.getName()), "outState", field, false);
+            }
         }
         jw.endMethod();
     }
