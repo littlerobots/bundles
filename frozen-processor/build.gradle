@@ -1,4 +1,5 @@
-uploadArchives.repositories.mavenDeployer.pom.name = 'Bundles @Frozen annotation processor'
+apply plugin: 'java'
+apply from: '../gradle/maven-publish.gradle'
 
 dependencies {
     compile project(':common')

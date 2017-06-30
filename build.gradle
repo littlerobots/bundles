@@ -5,18 +5,10 @@ buildscript {
         jcenter()
         mavenCentral()
     }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.2'
-    }
 }
 
 allprojects {
     apply plugin: "java"
-    apply plugin: "maven"
-    apply plugin: 'signing'
-
-    group = "nl.littlerobots.bundles"
 
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
@@ -24,84 +16,5 @@ allprojects {
     repositories {
         mavenCentral()
     }
-
-    if (project.hasProperty("signing.keyId")) {
-        signing {
-            sign configurations.archives
-        }
-    }
 }
 
-subprojects {
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from 'build/docs/javadoc'
-    }
-
-    task sourcesJar(type: Jar) {
-        from sourceSets.main.allSource
-        classifier = 'sources'
-    }
-
-    artifacts {
-        archives jar
-        archives javadocJar
-        archives sourcesJar
-    }
-
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-
-                beforeDeployment { deployment -> signing.signPom(deployment) }
-
-                if (project.hasProperty('sonatypeUsername')) {
-                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                        authentication(userName: sonatypeUsername, password: sonatypePassword)
-                    }
-
-                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
-                        authentication(userName: sonatypeUsername, password: sonatypePassword)
-                    }
-                }
-                uniqueVersion = false
-
-                pom.project {
-
-                    parent {
-                        groupId 'org.sonatype.oss'
-                        artifactId 'oss-parent'
-                        version '7'
-                    }
-
-                    name 'Bundles'
-                    packaging 'jar'
-                    description 'Bundles is a set of annotation processors for Android source code'
-                    url 'https://bitbucket.org/littlerobots/bundles'
-
-                    scm {
-                        url 'https://bitbucket.org/littlerobots/bundles'
-                        connection 'scm:hg:https://bitbucket.org/littlerobots/bundles'
-                        developerConnection 'scm:hg:https://bitbucket.org/littlerobots/bundles'
-                    }
-
-                    licenses {
-                        license {
-                            name 'Unlicense'
-                            url 'http://unlicense.org/UNLICENSE'
-                            distribution 'repo'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id 'hvisser'
-                            name 'Hugo Visser'
-                        }
-                    }
-                }
-            }
-        }
-    }
-}

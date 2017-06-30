@@ -1,2 +1,2 @@
-dependencies {
-}
+apply plugin: 'java'
+apply from: '../gradle/maven-publish.gradle'
