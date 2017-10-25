@@ -33,6 +33,7 @@ To construct this fragment you'd do something like this:
     TestFragment fragment2 = new Test2FragmentBuilder(false).total(10).build();
 
 Required arguments must be passed into the builder constructor, while non-required arguments have a builder method.
+Fields that are marked with `@NonNull` will be null checked at runtime.
 
 # `@Frozen`
 The `@Frozen` annotation aids with saving `Activity` or `Fragment` state in `onSaveInstanceState` and restoring it in `onCreate` or other places.
@@ -46,7 +47,7 @@ A class <YourActivityName>State is generated for this purpose. Here's an example
     import android.app.Activity;
     import android.os.Bundle;
 
-    import com.neenbedankt.bundles.annotation.Frozen;
+    import nl.littlerobots.bundles.annotation.Frozen;
 
     public class MyActivity extends Activity {
         @Frozen
@@ -82,6 +83,8 @@ for `@Argument`:
     implementation 'nl.littlerobots.bundles:argument-annotation:<latest-version>'
     annotationProcessor 'nl.littlerobots.bundles:argument-processor:<latest-version>'
     
+Note that as of version 2.0 the group name has changed from `com.neenbedankt.bundles` to `nl.littlerobots.bundles`.
+
 # License
 
 <pre>
