@@ -472,4 +472,64 @@ public class FragmentArgumentsProcessorTest {
                         "  }\n" +
                         "}"));
     }
+
+    @Test
+    public void testParcelableSetter() {
+        Compilation compilation = javac().
+                withProcessors(new FragmentArgumentsProcessor()).
+                compile(JavaFileObjects.forSourceLines("nl.littlerobots.test.TestFragment", "package nl.littlerobots.test;\n" +
+                        "\n" +
+                        "import android.app.Fragment;\n" +
+                        "import nl.littlerobots.bundles.annotation.Argument;\n" +
+                        "\n" +
+                        "public class TestFragment extends Fragment {\n" +
+                        "    @Argument\n" +
+                        "    private MyParcelable parcelable;\n" +
+                        "    public final void setParcelable(MyParcelable value) {};" +
+                        "}\n"));
+        assertThat(compilation).succeeded();
+        assertThat(compilation).generatedSourceFile("nl.littlerobots.test.TestFragmentBuilder").
+                hasSourceEquivalentTo(JavaFileObjects.forSourceString("nl.littlerobots.test.TestFragmentBuilder", "package nl.littlerobots.test;\n" +
+                        "\n" +
+                        "import android.os.Bundle;\n" +
+                        "import android.support.annotation.NonNull;\n" +
+                        "public final class TestFragmentBuilder {\n" +
+                        "  private final Bundle mArguments = new Bundle();\n" +
+                        "\n" +
+                        "  public TestFragmentBuilder(@NonNull MyParcelable parcelable) {\n" +
+                        "    if (parcelable == null) {\n" +
+                        "      throw new IllegalStateException(\"parcelable must not be null\");\n" +
+                        "    }\n" +
+                        "    mArguments.putParcelable(\"parcelable\", parcelable);\n" +
+                        "  }\n" +
+                        "  public static TestFragment newTestFragment(@NonNull MyParcelable parcelable) {\n" +
+                        "    return new TestFragmentBuilder(parcelable).build();\n" +
+                        "  }\n" +
+                        "  static final void injectArguments(TestFragment fragment) {\n" +
+                        "    Bundle args = fragment.getArguments();\n" +
+                        "    if (args == null) {\n" +
+                        "      throw new IllegalStateException(\"No arguments set\");\n" +
+                        "    }\n" +
+                        "    boolean containsKey;\n" +
+                        "    containsKey = args.containsKey(\"parcelable\");\n" +
+                        "    if (!containsKey) {\n" +
+                        "      throw new IllegalStateException(\"required argument parcelable is not set\");\n" +
+                        "    }\n" +
+                        "    if (args.getParcelable(\"parcelable\") == null) {\n" +
+                        "      throw new IllegalStateException(\"parcelable must not be null\");\n" +
+                        "    }\n" +
+                        "    fragment.setParcelable((nl.littlerobots.test.MyParcelable)args.getParcelable(\"parcelable\"));\n" +
+                        "  }\n" +
+                        "  public TestFragment build() {\n" +
+                        "    TestFragment fragment = new TestFragment();\n" +
+                        "    fragment.setArguments(mArguments);\n" +
+                        "    return fragment;\n" +
+                        "  }\n" +
+                        "  public <F extends TestFragment> F build(F fragment) {\n" +
+                        "    fragment.setArguments(mArguments);\n" +
+                        "    return fragment;\n" +
+                        "  }\n" +
+                        "}"));
+
+    }
 }

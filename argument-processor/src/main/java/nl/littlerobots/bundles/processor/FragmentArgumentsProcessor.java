@@ -9,6 +9,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -262,7 +263,13 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
 
             Element setter = findSetter(type.getElement());
             if (setter != null) {
-                jw.emitStatement("fragment.%1$s(%4$sargs.get%2$s(\"%3$s\"))", setter.getSimpleName().toString(), op, type.getKey(), cast);
+                String parameterCast;
+                if ("Serializable".equals(op) || "Parcelable".equals(op)) {
+                    parameterCast = "(" + ((ExecutableElement) setter).getParameters().get(0).asType().toString() + ")";
+                } else {
+                    parameterCast = "";
+                }
+                jw.emitStatement("fragment.%1$s(%4$sargs.get%2$s(\"%3$s\"))", setter.getSimpleName().toString(), op, type.getKey(), parameterCast);
             } else {
                 jw.emitStatement("fragment.%1$s = %4$sargs.get%2$s(\"%3$s\")", type.getName(), op, type.getKey(), cast);
             }
