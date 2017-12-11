@@ -236,9 +236,6 @@ public class FragmentArgumentsProcessorTest {
                         "  private final Bundle mArguments = new Bundle();\n" +
                         "\n" +
                         "  public TestFragmentBuilder(@Nullable String testStringArgument) {\n" +
-                        "    if (testStringArgument == null) {\n" +
-                        "      throw new IllegalStateException(\"testStringArgument must not be null\");\n" +
-                        "    }\n" +
                         "    mArguments.putString(\"testStringArgument\", testStringArgument);\n" +
                         "  }\n" +
                         "  public static TestFragment newTestFragment(@Nullable String testStringArgument) {\n" +

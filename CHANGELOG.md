@@ -1,3 +1,12 @@
+Version 2.0.2
+-------------
+* Fix ignoring `@NonNull` annotations
+
+Version 2.0.1
+-------------
+* Fix casting of Parcelable extras in setters
+
+
 Version 2.0
 -----------
 * Renamed group id and package to `nl.littlerobots.bundles.*`

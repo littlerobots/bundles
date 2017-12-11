@@ -147,7 +147,7 @@ public class FragmentArgumentsProcessor extends BaseProcessor {
                 jw.beginMethod(null, builder, EnumSet.of(Modifier.PUBLIC), args);
 
                 for (ArgumentAnnotatedField arg : required) {
-                    writePutArguments(jw, arg.getVariableName(), "mArguments", arg, arg.hasNonNullAnnotation() || defaultNonNull);
+                    writePutArguments(jw, arg.getVariableName(), "mArguments", arg, (defaultNonNull && !arg.hasNullableAnnotation()) || arg.hasNonNullAnnotation());
                 }
 
                 jw.endMethod();
